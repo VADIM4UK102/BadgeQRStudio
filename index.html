@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Badge QR Studio</title>
+<style>
+:root{--bg:#f4f6fa;--ink:#172033;--muted:#64748b;--line:#d7deea;--blue:#2457d6}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink)}
+header{background:#14213d;color:white;padding:22px max(18px,calc((100% - 1180px)/2))}
+header h1{margin:0 0 4px;font-size:25px}header p{margin:0;color:#cbd5e1}
+main{max-width:1180px;margin:22px auto;padding:0 16px;display:grid;grid-template-columns:340px 1fr;gap:18px}
+.panel{background:white;border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:0 3px 12px #1720330a}
+h2{font-size:17px;margin:0 0 12px}label{display:block;font-weight:650;margin:13px 0 5px}
+input,select,button{font:inherit}input[type=file],input[type=text],select{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;background:white}
+button{border:0;border-radius:9px;padding:11px 14px;background:var(--blue);color:white;font-weight:700;cursor:pointer;width:100%;margin-top:12px}
+button.secondary{background:#e8eefc;color:#1e40af}button:disabled{opacity:.5;cursor:not-allowed}
+.note{font-size:12px;color:var(--muted)}.status{margin-top:10px;color:#166534;font-size:13px;white-space:pre-wrap}
+.mapping{display:grid;grid-template-columns:1fr 1fr;gap:8px}.mapping label{font-size:12px;margin-top:8px}
+.preview-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.preview-head p{color:var(--muted);margin:0}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
+.badge{aspect-ratio:85.6/54;background:#fff;border:1px solid #9aa4b2;border-radius:5px;padding:3.2%;position:relative;overflow:hidden;display:grid;grid-template-rows:19% 15% 1fr 1fr 1fr;box-shadow:0 2px 8px #0f172a10}
+.top{display:grid;grid-template-columns:30% 70%;border-bottom:1px solid #333;font-size:clamp(9px,1.1vw,13px);font-weight:800;text-align:center}
+.top div{padding:2px;border-right:1px solid #333;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.top div:last-child{border:0}
+.badge-id{text-align:center;border-bottom:1px solid #333;font-weight:800;font-size:clamp(9px,1.05vw,13px);padding:2px}
+.qrrow{display:grid;grid-template-columns:1fr 1fr 1fr;min-height:0}
+.qrslot{border-right:1px solid #333;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;overflow:hidden}
+.qrslot:last-child{border:0}.qrslot img{width:66%;height:auto;max-height:75%;object-fit:contain;image-rendering:pixelated}
+.qrlabel{font-size:clamp(7px,.85vw,10px);font-weight:800;margin-top:2px}
+.processes{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);border-top:1px solid #333}
+.proc{border-right:1px solid #333;border-bottom:1px solid #333;text-align:center;font-weight:750;font-size:clamp(6px,.75vw,9px);display:flex;align-items:center;justify-content:center;position:relative;padding:1px}
+.proc:nth-child(3n){border-right:0}.proc:nth-last-child(-n+3){border-bottom:0}
+.dot{width:clamp(7px,1vw,12px);height:clamp(7px,1vw,12px);background:#111;border-radius:50%;position:absolute}
+.empty{color:var(--muted);text-align:center;padding:45px 10px;border:1px dashed #cbd5e1;border-radius:10px;margin-top:16px}
+@media(max-width:800px){main{grid-template-columns:1fr}.cards{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.cards{grid-template-columns:1fr}.badge{max-width:390px;width:100%;margin:auto}}
+@media print{body{background:white}header,main>.panel:first-child,.preview-head,.note,.status{display:none!important}main{display:block;max-width:none;margin:0;padding:0}.panel{border:0;padding:0;box-shadow:none}.cards{grid-template-columns:repeat(2,85.6mm);grid-auto-rows:54mm;gap:3mm;justify-content:center;margin:0}.badge{width:85.6mm;height:54mm;aspect-ratio:auto;break-inside:avoid;box-shadow:none;border-radius:0;padding:2.5mm}.top{font-size:8pt}.badge-id{font-size:8pt}.qrlabel{font-size:6pt}.proc{font-size:5.5pt}.qrslot img{width:62%}}
+</style>
+</head>
+<body>
+<header><h1>Badge QR Studio</h1><p>Створення бейджиків 85,6 × 54 мм із таблиці — до 10 карток на аркуші A4</p></header>
+<main>
+<section class="panel">
+<h2>1. Завантажте таблицю</h2>
+<p class="note">Підтримуються CSV та Excel (.xlsx, .xls). Перший рядок має містити назви колонок.</p>
+<label for="file">Файл таблиці</label><input id="file" type="file" accept=".csv,.xlsx,.xls">
+<div id="mapping" hidden>
+<h2 style="margin-top:18px">2. Виберіть колонки</h2>
+<div class="mapping">
+<div><label for="idcol">ID / логін</label><select id="idcol"></select></div>
+<div><label for="namecol">Прізвище та ім’я</label><select id="namecol"></select></div>
+<div><label for="passcol">Пароль</label><select id="passcol"></select></div>
+<div><label for="procstart">Перша колонка процесів</label><select id="procstart"></select></div>
+</div>
+<label for="proccount">Кількість колонок процесів</label><select id="proccount"><option>9</option><option>6</option><option>3</option><option>12</option></select>
+<label for="perpage">Карток на сторінці</label><select id="perpage"><option value="10">10 карток (A4)</option><option value="8">8 карток (більший розмір)</option></select>
+<button id="generate">Створити попередній перегляд</button>
+<button class="secondary" id="pdf" disabled>Завантажити PDF</button>
+<button class="secondary" id="print" disabled>Друк / Зберегти як PDF</button>
+<p class="note">QR-коди містять значення вибраних колонок. Тримайте файл із паролями в безпеці.</p>
+</div>
+<div id="status" class="status"></div>
+</section>
+<section class="panel">
+<div class="preview-head"><div><h2>Попередній перегляд</h2><p id="summary">Завантажте таблицю, щоб почати.</p></div></div>
+<div id="cards" class="empty">Тут з’являться готові бейджики.</div>
+</section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script>
+let rows=[], headers=[], currentCards=[];
+const $=id=>document.getElementById(id);
+const status=m=>$('status').textContent=m;
+function normalize(s){return String(s??'').trim().toLowerCase()}
+function guess(keys,terms,fallback=0){let i=keys.findIndex(k=>terms.some(t=>normalize(k).includes(t)));return i<0?fallback:i}
+$('file').addEventListener('change',async e=>{
+ const f=e.target.files[0];if(!f)return;
+ try{
+  const data=await f.arrayBuffer();let wb;
+  if(/\.csv$/i.test(f.name)) wb=XLSX.read(new TextDecoder('utf-8').decode(data),{type:'string'});
+  else wb=XLSX.read(data,{type:'array'});
+  const sheet=wb.Sheets[wb.SheetNames[0]];const json=XLSX.utils.sheet_to_json(sheet,{header:1,defval:''});
+  if(json.length<2)throw new Error('У файлі немає рядків із даними.');
+  headers=json[0].map((v,i)=>String(v||`Колонка ${i+1}`));rows=json.slice(1).filter(r=>r.some(v=>String(v).trim()!==''));
+  ['idcol','namecol','passcol','procstart'].forEach(id=>{$(id).innerHTML='';headers.forEach((h,i)=>{let o=document.createElement('option');o.value=i;o.textContent=h;$(id).appendChild(o)})});
+  $('idcol').value=guess(headers,['id','login','логін','номер']);
+  $('namecol').value=guess(headers,['ім’я','імя','прізвище','name','surname'],Math.min(1,headers.length-1));
+  $('passcol').value=guess(headers,['пароль','password','haslo','hasło'],Math.min(2,headers.length-1));
+  $('procstart').value=Math.min(3,headers.length-1);
+  $('mapping').hidden=false;status(`Завантажено рядків: ${rows.length}. Перевірте відповідність колонок.`);
+ }catch(err){status('Не вдалося прочитати файл: '+err.message)}
+});
+function cell(row,i){return String(row[Number(i)]??'').trim()}
+function makeCard(row,idx,procHeaders,procVals){
+ const id=cell(row,$('idcol').value),name=cell(row,$('namecol').value),pass=cell(row,$('passcol').value);
+ const el=document.createElement('div');el.className='badge';
+ const top=document.createElement('div');top.className='top';
+ top.innerHTML=`<div>${escapeHtml(procHeaders.length? 'ID':'ID')}</div><div title="${escapeHtml(name)}">${escapeHtml(name||'Без імені')}</div>`;el.appendChild(top);
+ const idline=document.createElement('div');idline.className='badge-id';idline.textContent=id;el.appendChild(idline);
+ const qrs=document.createElement('div');qrs.className='qrrow';
+ const vals=[{label:'LOGIN',value:id},{label:'IMIĘ',value:name},{label:'HASŁO',value:pass}];
+ vals.forEach(v=>{const slot=document.createElement('div');slot.className='qrslot';const img=document.createElement('img');img.alt=v.label;img.dataset.qr=v.value;slot.appendChild(img);const lab=document.createElement('div');lab.className='qrlabel';lab.textContent=v.label;slot.appendChild(lab);qrs.appendChild(slot)});el.appendChild(qrs);
+ const ps=document.createElement('div');ps.className='processes';
+ procHeaders.forEach((h,i)=>{const p=document.createElement('div');p.className='proc';p.textContent=h; if(procVals[i]){const dot=document.createElement('span');dot.className='dot';p.appendChild(dot)}ps.appendChild(p)});
+ el.appendChild(ps);return el;
+}
+function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+async function fillQrs(root){for(const img of root.querySelectorAll('img[data-qr]')){try{img.src=await QRCode.toDataURL(img.dataset.qr||' ',{width:180,margin:0,errorCorrectionLevel:'M'});}catch(e){}}}
+$('generate').addEventListener('click',async()=>{
+ if(!rows.length)return status('Спочатку завантажте таблицю.');
+ const start=Number($('procstart').value),count=Number($('proccount').value);
+ const ph=headers.slice(start,start+count);if(!ph.length)return status('Не знайдено колонок процесів.');
+ const root=$('cards');root.className='cards';root.innerHTML='';currentCards=[];
+ rows.forEach((r,i)=>{const vals=ph.map((_,j)=>{const v=normalize(r[start+j]);return ['1','●','так','yes','true','x','✓','●'].includes(v)});const card=makeCard(r,i,ph,vals);root.appendChild(card);currentCards.push(card)});
+ await fillQrs(root);$('pdf').disabled=false;$('print').disabled=false;
+ $('summary').textContent=`Створено бейджиків: ${rows.length}. На сторінці A4 буде до 10 карток; зайві перейдуть на наступну сторінку.`;
+ status('Готово. Перевірте макет перед друком.');
+});
+function drawText(doc,text,x,y,w,h,opts={}){doc.setFont('helvetica',opts.bold?'bold':'normal');doc.setFontSize(opts.size||7);doc.text(String(text||''),x,y,{maxWidth:w,align:opts.align||'left',baseline:'middle'});}
+function qrData(img){return img.src}
+$('pdf').addEventListener('click',async()=>{
+ if(!currentCards.length)return;
+ const {jsPDF}=window.jspdf;const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+ const per=Number($('perpage').value),cols=2,cardW=85.6,cardH=54,gapX=3,gapY=3;
+ const totalW=cols*cardW+gapX,totalH=Math.ceil(per/cols)*cardH+(Math.ceil(per/cols)-1)*gapY;
+ const left=(210-totalW)/2,top=(297-totalH)/2;
+ for(let i=0;i<currentCards.length;i++){
+  if(i>0&&i%per===0)doc.addPage();
+  const local=i%per,c=local%cols,r=Math.floor(local/cols),x=left+c*(cardW+gapX),y=top+r*(cardH+gapY),card=currentCards[i];
+  doc.setDrawColor(45);doc.setLineWidth(.25);doc.rect(x,y,cardW,cardH);
+  const name=card.querySelector('.top div:nth-child(2)').textContent,id=card.querySelector('.badge-id').textContent;
+  doc.line(x,y+10, x+cardW,y+10);drawText(doc,'ID',x+2,y+5,20,5,{bold:true,size:8});drawText(doc,name,x+27,y+5,cardW-29,5,{bold:true,size:8});
+  drawText(doc,id,x+cardW/2,y+13.5,cardW-4,5,{bold:true,size:8,align:'center'});
+  const slots=[...card.querySelectorAll('.qrslot')],qrY=y+15,qrSize=15.5;
+  slots.forEach((s,j)=>{const qx=x+3+j*27.2;try{doc.addImage(qrData(s.querySelector('img')),'PNG',qx+5,qrY,qrSize,qrSize)}catch(e){}drawText(doc,s.querySelector('.qrlabel').textContent,qx,qrY+19,25,3,{bold:true,size:6,align:'center'})});
+  const ps=[...card.querySelectorAll('.proc')],pY=y+36.5,pH=5.5,pW=cardW/3;
+  ps.forEach((p,j)=>{const px=x+(j%3)*pW,py=pY+Math.floor(j/3)*pH;doc.rect(px,py,pW,pH);drawText(doc,p.childNodes[0]?.textContent||'',px+1,py+2.8,pW-2,4,{bold:true,size:5.5,align:'center'});if(p.querySelector('.dot')){doc.setFillColor(0);doc.circle(px+pW/2,py+2.8,1.1,'F')}});
+ }
+ doc.save('badge-qr-cards.pdf');status('PDF сформовано.');
+});
+$('print').addEventListener('click',()=>window.print());
+</script>
+</body></html>
