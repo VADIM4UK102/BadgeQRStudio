@@ -1,144 +1,660 @@
-<!doctype html>
-<html lang="uk">
+<!DOCTYPE html>
+<html lang="uk" class="dark">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Badge QR Studio</title>
-<style>
-:root{--bg:#f4f6fa;--ink:#172033;--muted:#64748b;--line:#d7deea;--blue:#2457d6}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink)}
-header{background:#14213d;color:white;padding:22px max(18px,calc((100% - 1180px)/2))}
-header h1{margin:0 0 4px;font-size:25px}header p{margin:0;color:#cbd5e1}
-main{max-width:1180px;margin:22px auto;padding:0 16px;display:grid;grid-template-columns:340px 1fr;gap:18px}
-.panel{background:white;border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:0 3px 12px #1720330a}
-h2{font-size:17px;margin:0 0 12px}label{display:block;font-weight:650;margin:13px 0 5px}
-input,select,button{font:inherit}input[type=file],input[type=text],select{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;background:white}
-button{border:0;border-radius:9px;padding:11px 14px;background:var(--blue);color:white;font-weight:700;cursor:pointer;width:100%;margin-top:12px}
-button.secondary{background:#e8eefc;color:#1e40af}button:disabled{opacity:.5;cursor:not-allowed}
-.note{font-size:12px;color:var(--muted)}.status{margin-top:10px;color:#166534;font-size:13px;white-space:pre-wrap}
-.mapping{display:grid;grid-template-columns:1fr 1fr;gap:8px}.mapping label{font-size:12px;margin-top:8px}
-.preview-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.preview-head p{color:var(--muted);margin:0}
-.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
-.badge{aspect-ratio:85.6/54;background:#fff;border:1px solid #9aa4b2;border-radius:5px;padding:3.2%;position:relative;overflow:hidden;display:grid;grid-template-rows:19% 15% 1fr 1fr 1fr;box-shadow:0 2px 8px #0f172a10}
-.top{display:grid;grid-template-columns:30% 70%;border-bottom:1px solid #333;font-size:clamp(9px,1.1vw,13px);font-weight:800;text-align:center}
-.top div{padding:2px;border-right:1px solid #333;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.top div:last-child{border:0}
-.badge-id{text-align:center;border-bottom:1px solid #333;font-weight:800;font-size:clamp(9px,1.05vw,13px);padding:2px}
-.qrrow{display:grid;grid-template-columns:1fr 1fr 1fr;min-height:0}
-.qrslot{border-right:1px solid #333;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;overflow:hidden}
-.qrslot:last-child{border:0}.qrslot img{width:66%;height:auto;max-height:75%;object-fit:contain;image-rendering:pixelated}
-.qrlabel{font-size:clamp(7px,.85vw,10px);font-weight:800;margin-top:2px}
-.processes{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);border-top:1px solid #333}
-.proc{border-right:1px solid #333;border-bottom:1px solid #333;text-align:center;font-weight:750;font-size:clamp(6px,.75vw,9px);display:flex;align-items:center;justify-content:center;position:relative;padding:1px}
-.proc:nth-child(3n){border-right:0}.proc:nth-last-child(-n+3){border-bottom:0}
-.dot{width:clamp(7px,1vw,12px);height:clamp(7px,1vw,12px);background:#111;border-radius:50%;position:absolute}
-.empty{color:var(--muted);text-align:center;padding:45px 10px;border:1px dashed #cbd5e1;border-radius:10px;margin-top:16px}
-@media(max-width:800px){main{grid-template-columns:1fr}.cards{grid-template-columns:1fr 1fr}}
-@media(max-width:480px){.cards{grid-template-columns:1fr}.badge{max-width:390px;width:100%;margin:auto}}
-@media print{body{background:white}header,main>.panel:first-child,.preview-head,.note,.status{display:none!important}main{display:block;max-width:none;margin:0;padding:0}.panel{border:0;padding:0;box-shadow:none}.cards{grid-template-columns:repeat(2,85.6mm);grid-auto-rows:54mm;gap:3mm;justify-content:center;margin:0}.badge{width:85.6mm;height:54mm;aspect-ratio:auto;break-inside:avoid;box-shadow:none;border-radius:0;padding:2.5mm}.top{font-size:8pt}.badge-id{font-size:8pt}.qrlabel{font-size:6pt}.proc{font-size:5.5pt}.qrslot img{width:62%}}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генератор бейджів DC3 Outsort (A4 Альбомний)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- QRCode.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- PapaParse for parsing CSV files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Exact A4 Landscape setup for Print & PDF */
+        @page {
+            size: A4 landscape;
+            margin: 0;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        /* Screen Preview Styling: A4 Landscape (297mm x 210mm) */
+        .a4-page {
+            width: 297mm;
+            height: 210mm;
+            padding: 8mm 9mm;
+            background: #ffffff;
+            margin: 0 auto 24px auto;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            box-sizing: border-box;
+            position: relative;
+            color: #000000;
+            page-break-after: always;
+            break-after: page;
+        }
+
+        .a4-page:last-child {
+            page-break-after: auto;
+            break-after: auto;
+        }
+
+        /* 10 Vertical Badges Grid on A4 Landscape: 5 columns x 2 rows */
+        .badges-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 52mm);
+            grid-template-rows: repeat(2, 92mm);
+            gap: 6mm 4mm;
+            justify-content: center;
+            align-content: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Single Vertical Badge (52mm x 92mm fit for 5x2 landscape grid) */
+        .badge {
+            width: 52mm;
+            height: 92mm;
+            border: 1.5pt solid #000000;
+            border-radius: 6px;
+            padding: 2.5mm;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
+            color: #000000;
+            font-family: Arial, Helvetica, sans-serif;
+            overflow: hidden;
+        }
+
+        .badge-header {
+            display: flex;
+            border: 1.5pt solid #000000;
+            border-radius: 4px;
+            overflow: hidden;
+            height: 7.5mm;
+            width: 100%;
+            flex-shrink: 0;
+        }
+
+        .badge-header .dc3-box {
+            width: 38%;
+            font-weight: 900;
+            font-size: 11pt;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-right: 1.5pt solid #000000;
+            background: #ffffff;
+            color: #000000;
+        }
+
+        .badge-header .outsort-box {
+            width: 62%;
+            font-size: 10.5pt;
+            font-weight: normal;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-transform: lowercase;
+            background: #ffffff;
+            color: #000000;
+        }
+
+        .badge-user-info {
+            text-align: center;
+            margin: 1mm 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .badge-name {
+            font-size: 10.5pt;
+            font-weight: bold;
+            line-height: 1.15;
+            word-break: break-word;
+            max-width: 100%;
+        }
+
+        .badge-id {
+            font-size: 9.5pt;
+            font-weight: bold;
+            margin-top: 0.5mm;
+        }
+
+        .qr-section-top {
+            border: 1.5pt solid #000000;
+            border-radius: 6px;
+            height: 39mm;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1mm;
+            background: #ffffff;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+
+        .qr-section-bottom {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            border: 1.5pt solid #000000;
+            border-radius: 6px;
+            overflow: hidden;
+            height: 25mm;
+            width: 100%;
+            flex-shrink: 0;
+        }
+
+        .qr-sub-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5mm;
+            background: #ffffff;
+        }
+
+        .qr-sub-box:first-child {
+            border-right: 1.5pt solid #000000;
+        }
+
+        .qr-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qr-container img, .qr-container canvas {
+            display: block;
+            margin: 0 auto;
+        }
+
+        .qr-label {
+            font-size: 8pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-top: 1mm;
+            line-height: 1;
+            letter-spacing: 0.3px;
+        }
+
+        /* PRINT MEDIA STYLES */
+        @media print {
+            html, body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            #preview-container {
+                padding: 0 !important;
+                margin: 0 !important;
+                background: transparent !important;
+                overflow: visible !important;
+            }
+
+            .a4-page {
+                margin: 0 !important;
+                box-shadow: none !important;
+                border: none !important;
+                padding: 8mm 9mm !important;
+                width: 297mm !important;
+                height: 210mm !important;
+            }
+        }
+    </style>
 </head>
-<body>
-<header><h1>Badge QR Studio</h1><p>Створення бейджиків 85,6 × 54 мм із таблиці — до 10 карток на аркуші A4</p></header>
-<main>
-<section class="panel">
-<h2>1. Завантажте таблицю</h2>
-<p class="note">Підтримуються CSV та Excel (.xlsx, .xls). Перший рядок має містити назви колонок.</p>
-<label for="file">Файл таблиці</label><input id="file" type="file" accept=".csv,.xlsx,.xls">
-<div id="mapping" hidden>
-<h2 style="margin-top:18px">2. Виберіть колонки</h2>
-<div class="mapping">
-<div><label for="idcol">ID / логін</label><select id="idcol"></select></div>
-<div><label for="namecol">Прізвище та ім’я</label><select id="namecol"></select></div>
-<div><label for="passcol">Пароль</label><select id="passcol"></select></div>
-<div><label for="procstart">Перша колонка процесів</label><select id="procstart"></select></div>
-</div>
-<label for="proccount">Кількість колонок процесів</label><select id="proccount"><option>9</option><option>6</option><option>3</option><option>12</option></select>
-<label for="perpage">Карток на сторінці</label><select id="perpage"><option value="10">10 карток (A4)</option><option value="8">8 карток (більший розмір)</option></select>
-<button id="generate">Створити попередній перегляд</button>
-<button class="secondary" id="pdf" disabled>Завантажити PDF</button>
-<button class="secondary" id="print" disabled>Друк / Зберегти як PDF</button>
-<p class="note">QR-коди містять значення вибраних колонок. Тримайте файл із паролями в безпеці.</p>
-</div>
-<div id="status" class="status"></div>
-</section>
-<section class="panel">
-<div class="preview-head"><div><h2>Попередній перегляд</h2><p id="summary">Завантажте таблицю, щоб почати.</p></div></div>
-<div id="cards" class="empty">Тут з’являться готові бейджики.</div>
-</section>
-</main>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-<script>
-let rows=[], headers=[], currentCards=[];
-const $=id=>document.getElementById(id);
-const status=m=>$('status').textContent=m;
-function normalize(s){return String(s??'').trim().toLowerCase()}
-function guess(keys,terms,fallback=0){let i=keys.findIndex(k=>terms.some(t=>normalize(k).includes(t)));return i<0?fallback:i}
-$('file').addEventListener('change',async e=>{
- const f=e.target.files[0];if(!f)return;
- try{
-  const data=await f.arrayBuffer();let wb;
-  if(/\.csv$/i.test(f.name)) wb=XLSX.read(new TextDecoder('utf-8').decode(data),{type:'string'});
-  else wb=XLSX.read(data,{type:'array'});
-  const sheet=wb.Sheets[wb.SheetNames[0]];const json=XLSX.utils.sheet_to_json(sheet,{header:1,defval:''});
-  if(json.length<2)throw new Error('У файлі немає рядків із даними.');
-  headers=json[0].map((v,i)=>String(v||`Колонка ${i+1}`));rows=json.slice(1).filter(r=>r.some(v=>String(v).trim()!==''));
-  ['idcol','namecol','passcol','procstart'].forEach(id=>{$(id).innerHTML='';headers.forEach((h,i)=>{let o=document.createElement('option');o.value=i;o.textContent=h;$(id).appendChild(o)})});
-  $('idcol').value=guess(headers,['id','login','логін','номер']);
-  $('namecol').value=guess(headers,['ім’я','імя','прізвище','name','surname'],Math.min(1,headers.length-1));
-  $('passcol').value=guess(headers,['пароль','password','haslo','hasło'],Math.min(2,headers.length-1));
-  $('procstart').value=Math.min(3,headers.length-1);
-  $('mapping').hidden=false;status(`Завантажено рядків: ${rows.length}. Перевірте відповідність колонок.`);
- }catch(err){status('Не вдалося прочитати файл: '+err.message)}
-});
-function cell(row,i){return String(row[Number(i)]??'').trim()}
-function makeCard(row,idx,procHeaders,procVals){
- const id=cell(row,$('idcol').value),name=cell(row,$('namecol').value),pass=cell(row,$('passcol').value);
- const el=document.createElement('div');el.className='badge';
- const top=document.createElement('div');top.className='top';
- top.innerHTML=`<div>${escapeHtml(procHeaders.length? 'ID':'ID')}</div><div title="${escapeHtml(name)}">${escapeHtml(name||'Без імені')}</div>`;el.appendChild(top);
- const idline=document.createElement('div');idline.className='badge-id';idline.textContent=id;el.appendChild(idline);
- const qrs=document.createElement('div');qrs.className='qrrow';
- const vals=[{label:'LOGIN',value:id},{label:'IMIĘ',value:name},{label:'HASŁO',value:pass}];
- vals.forEach(v=>{const slot=document.createElement('div');slot.className='qrslot';const img=document.createElement('img');img.alt=v.label;img.dataset.qr=v.value;slot.appendChild(img);const lab=document.createElement('div');lab.className='qrlabel';lab.textContent=v.label;slot.appendChild(lab);qrs.appendChild(slot)});el.appendChild(qrs);
- const ps=document.createElement('div');ps.className='processes';
- procHeaders.forEach((h,i)=>{const p=document.createElement('div');p.className='proc';p.textContent=h; if(procVals[i]){const dot=document.createElement('span');dot.className='dot';p.appendChild(dot)}ps.appendChild(p)});
- el.appendChild(ps);return el;
-}
-function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-async function fillQrs(root){for(const img of root.querySelectorAll('img[data-qr]')){try{img.src=await QRCode.toDataURL(img.dataset.qr||' ',{width:180,margin:0,errorCorrectionLevel:'M'});}catch(e){}}}
-$('generate').addEventListener('click',async()=>{
- if(!rows.length)return status('Спочатку завантажте таблицю.');
- const start=Number($('procstart').value),count=Number($('proccount').value);
- const ph=headers.slice(start,start+count);if(!ph.length)return status('Не знайдено колонок процесів.');
- const root=$('cards');root.className='cards';root.innerHTML='';currentCards=[];
- rows.forEach((r,i)=>{const vals=ph.map((_,j)=>{const v=normalize(r[start+j]);return ['1','●','так','yes','true','x','✓','●'].includes(v)});const card=makeCard(r,i,ph,vals);root.appendChild(card);currentCards.push(card)});
- await fillQrs(root);$('pdf').disabled=false;$('print').disabled=false;
- $('summary').textContent=`Створено бейджиків: ${rows.length}. На сторінці A4 буде до 10 карток; зайві перейдуть на наступну сторінку.`;
- status('Готово. Перевірте макет перед друком.');
-});
-function drawText(doc,text,x,y,w,h,opts={}){doc.setFont('helvetica',opts.bold?'bold':'normal');doc.setFontSize(opts.size||7);doc.text(String(text||''),x,y,{maxWidth:w,align:opts.align||'left',baseline:'middle'});}
-function qrData(img){return img.src}
-$('pdf').addEventListener('click',async()=>{
- if(!currentCards.length)return;
- const {jsPDF}=window.jspdf;const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
- const per=Number($('perpage').value),cols=2,cardW=85.6,cardH=54,gapX=3,gapY=3;
- const totalW=cols*cardW+gapX,totalH=Math.ceil(per/cols)*cardH+(Math.ceil(per/cols)-1)*gapY;
- const left=(210-totalW)/2,top=(297-totalH)/2;
- for(let i=0;i<currentCards.length;i++){
-  if(i>0&&i%per===0)doc.addPage();
-  const local=i%per,c=local%cols,r=Math.floor(local/cols),x=left+c*(cardW+gapX),y=top+r*(cardH+gapY),card=currentCards[i];
-  doc.setDrawColor(45);doc.setLineWidth(.25);doc.rect(x,y,cardW,cardH);
-  const name=card.querySelector('.top div:nth-child(2)').textContent,id=card.querySelector('.badge-id').textContent;
-  doc.line(x,y+10, x+cardW,y+10);drawText(doc,'ID',x+2,y+5,20,5,{bold:true,size:8});drawText(doc,name,x+27,y+5,cardW-29,5,{bold:true,size:8});
-  drawText(doc,id,x+cardW/2,y+13.5,cardW-4,5,{bold:true,size:8,align:'center'});
-  const slots=[...card.querySelectorAll('.qrslot')],qrY=y+15,qrSize=15.5;
-  slots.forEach((s,j)=>{const qx=x+3+j*27.2;try{doc.addImage(qrData(s.querySelector('img')),'PNG',qx+5,qrY,qrSize,qrSize)}catch(e){}drawText(doc,s.querySelector('.qrlabel').textContent,qx,qrY+19,25,3,{bold:true,size:6,align:'center'})});
-  const ps=[...card.querySelectorAll('.proc')],pY=y+36.5,pH=5.5,pW=cardW/3;
-  ps.forEach((p,j)=>{const px=x+(j%3)*pW,py=pY+Math.floor(j/3)*pH;doc.rect(px,py,pW,pH);drawText(doc,p.childNodes[0]?.textContent||'',px+1,py+2.8,pW-2,4,{bold:true,size:5.5,align:'center'});if(p.querySelector('.dot')){doc.setFillColor(0);doc.circle(px+pW/2,py+2.8,1.1,'F')}});
- }
- doc.save('badge-qr-cards.pdf');status('PDF сформовано.');
-});
-$('print').addEventListener('click',()=>window.print());
-</script>
-</body></html>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
+
+    <!-- Header (No Print) -->
+    <header class="no-print border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="bg-brand-600 text-white p-2 rounded-lg font-bold text-lg tracking-wider">
+                    DC3
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg text-white leading-tight">Генератор бейджів Outsort (А4 Альбомний)</h1>
+                    <p class="text-xs text-slate-400">Вертикальні карти в сітці 5×2 (10 шт на лист A4 альбомний)</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <button onclick="downloadSampleCSV()" class="px-3 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 transition flex items-center gap-2">
+                    <i class="fa-solid fa-file-csv text-emerald-400"></i> Шаблон CSV
+                </button>
+                <button onclick="loadDemoData()" class="px-3 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 transition flex items-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i> Демо-дані
+                </button>
+                <button onclick="triggerPrint()" class="px-4 py-2 text-sm font-semibold bg-brand-600 hover:bg-brand-500 text-white rounded-lg shadow-lg shadow-brand-600/30 transition flex items-center gap-2">
+                    <i class="fa-solid fa-print"></i> Друк / PDF
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Left Controls Sidebar (No Print) -->
+        <div class="no-print lg:col-span-5 space-y-6">
+
+            <!-- Card 1: Import & Upload -->
+            <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-5 shadow-xl">
+                <h2 class="text-base font-semibold text-white mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-file-import text-brand-500"></i> Завантаження даних (CSV)
+                </h2>
+                
+                <div id="drop-zone" class="border-2 border-dashed border-slate-600 hover:border-brand-500 bg-slate-900/50 rounded-lg p-5 text-center cursor-pointer transition">
+                    <input type="file" id="csv-file-input" accept=".csv,.txt" class="hidden">
+                    <i class="fa-solid fa-cloud-arrow-up text-3xl text-slate-400 mb-2"></i>
+                    <p class="text-sm text-slate-300 font-medium">Перетягніть CSV файл сюди або натисніть</p>
+                    <p class="text-xs text-slate-500 mt-1">Формат CSV: ID, Прізвище Ім'я, Пароль</p>
+                </div>
+
+                <div class="mt-4 flex justify-between items-center text-xs text-slate-400">
+                    <span id="record-count">Записів: 0</span>
+                    <button onclick="clearAllData()" class="text-rose-400 hover:text-rose-300 transition flex items-center gap-1">
+                        <i class="fa-solid fa-trash-can"></i> Очистити все
+                    </button>
+                </div>
+            </div>
+
+            <!-- Card 2: Manual Data Entry & Table -->
+            <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-5 shadow-xl flex flex-col h-[500px]">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-base font-semibold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-table-list text-brand-500"></i> Список працівників
+                    </h2>
+                    <button onclick="addNewRow()" class="px-2.5 py-1 text-xs bg-brand-600/20 hover:bg-brand-600/30 text-brand-400 rounded border border-brand-500/30 transition flex items-center gap-1">
+                        <i class="fa-solid fa-plus"></i> Додати
+                    </button>
+                </div>
+
+                <!-- Table Wrapper -->
+                <div class="flex-1 overflow-y-auto border border-slate-700 rounded-lg bg-slate-900/60">
+                    <table class="w-full text-left text-xs text-slate-300">
+                        <thead class="bg-slate-950 text-slate-400 sticky top-0 border-b border-slate-700">
+                            <tr>
+                                <th class="p-2 w-24">ID</th>
+                                <th class="p-2">Прізвище та Ім'я</th>
+                                <th class="p-2 w-28">Пароль</th>
+                                <th class="p-2 w-8 text-center"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body" class="divide-y divide-slate-800">
+                            <!-- Dynamic rows injected here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-3 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg text-xs text-blue-300 flex items-start gap-2">
+                    <i class="fa-solid fa-circle-info mt-0.5 text-blue-400"></i>
+                    <span>Орієнтація аркуша — **Landscape (Альбомна)**. На одному листі розміщуються точно **10 вертикальних карт** (5 в ряд × 2 у стовпчик).</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Side: A4 Live Preview -->
+        <div class="lg:col-span-7 flex flex-col items-center">
+            
+            <div class="no-print w-full flex items-center justify-between mb-4 bg-slate-800/80 border border-slate-700 px-4 py-2.5 rounded-xl">
+                <div class="text-sm font-medium text-slate-300">
+                    Попередній перегляд (A4 Альбомний - <span id="page-count">0</span> сторінок)
+                </div>
+                <div class="text-xs text-slate-400 flex items-center gap-2">
+                    <span class="inline-block w-2.5 h-2.5 bg-emerald-500 rounded-full"></span> 5×2 (10 карт / A4)
+                </div>
+            </div>
+
+            <!-- Preview Container -->
+            <div id="preview-container" class="w-full flex flex-col items-center overflow-x-auto pb-12">
+                <!-- Pages render dynamically here -->
+            </div>
+
+        </div>
+
+    </main>
+
+    <script>
+        // Data Store
+        let usersData = [];
+
+        // DOM Elements
+        const tableBody = document.getElementById('table-body');
+        const previewContainer = document.getElementById('preview-container');
+        const recordCountEl = document.getElementById('record-count');
+        const pageCountEl = document.getElementById('page-count');
+        const csvFileInput = document.getElementById('csv-file-input');
+        const dropZone = document.getElementById('drop-zone');
+
+        // Initial setup on DOM ready
+        window.addEventListener('DOMContentLoaded', () => {
+            loadDemoData();
+            setupFileImport();
+        });
+
+        // Load Default Demo Records
+        function loadDemoData() {
+            usersData = [
+                { id: "60121553", name: "Anna Shepera", pass: "Pass1234" },
+                { id: "60121554", name: "Ivan Kovalenko", pass: "Qwerty99" },
+                { id: "60121555", name: "Maria Petrenko", pass: "Secu9876" },
+                { id: "60121556", name: "Oleh Bondar", pass: "Log2026x" },
+                { id: "60121557", name: "Olena Kravets", pass: "Pass4321" },
+                { id: "60121558", name: "Dmytro Moroz", pass: "Pass5566" },
+                { id: "60121559", name: "Tetiana Boyko", pass: "Teti7788" },
+                { id: "60121560", name: "Serhiy Melnyk", pass: "Serh9900" },
+                { id: "60121561", name: "Yulia Tkachenko", pass: "Yuli1122" },
+                { id: "60121562", name: "Viktor Shevchenko", pass: "Vikt3344" }
+            ];
+            renderTable();
+            renderBadges();
+        }
+
+        // Render Table Rows
+        function renderTable() {
+            tableBody.innerHTML = '';
+            usersData.forEach((user, index) => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-800/50 transition';
+                tr.innerHTML = `
+                    <td class="p-1.5">
+                        <input type="text" value="${escapeHtml(user.id)}" oninput="updateRow(${index}, 'id', this.value)" 
+                               class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white focus:border-brand-500 focus:outline-none">
+                    </td>
+                    <td class="p-1.5">
+                        <input type="text" value="${escapeHtml(user.name)}" oninput="updateRow(${index}, 'name', this.value)" 
+                               class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white focus:border-brand-500 focus:outline-none">
+                    </td>
+                    <td class="p-1.5">
+                        <input type="text" value="${escapeHtml(user.pass)}" oninput="updateRow(${index}, 'pass', this.value)" 
+                               class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white focus:border-brand-500 focus:outline-none">
+                    </td>
+                    <td class="p-1.5 text-center">
+                        <button onclick="deleteRow(${index})" class="text-slate-500 hover:text-rose-400 transition p-1" title="Видалити">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+
+            recordCountEl.innerText = `Записів: ${usersData.length}`;
+        }
+
+        function updateRow(index, field, value) {
+            usersData[index][field] = value;
+            renderBadges();
+        }
+
+        function addNewRow() {
+            usersData.push({ id: "60120000", name: "Новий Працівник", pass: "123456" });
+            renderTable();
+            renderBadges();
+        }
+
+        function deleteRow(index) {
+            usersData.splice(index, 1);
+            renderTable();
+            renderBadges();
+        }
+
+        function clearAllData() {
+            usersData = [];
+            renderTable();
+            renderBadges();
+        }
+
+        // Render PDF A4 Badge Pages
+        function renderBadges() {
+            previewContainer.innerHTML = '';
+
+            if (usersData.length === 0) {
+                previewContainer.innerHTML = `
+                    <div class="p-12 text-center text-slate-500 bg-slate-800/40 border border-slate-700/60 rounded-xl w-full">
+                        <i class="fa-solid fa-id-card text-4xl mb-3 text-slate-600"></i>
+                        <p class="text-base font-medium text-slate-400">Немає даних для бейджів</p>
+                        <p class="text-xs mt-1">Додайте працівників вручну або завантажте CSV-файл</p>
+                    </div>
+                `;
+                pageCountEl.innerText = '0';
+                return;
+            }
+
+            const pageSize = 10;
+            const pageCount = Math.ceil(usersData.length / pageSize);
+            pageCountEl.innerText = pageCount;
+
+            for (let p = 0; p < pageCount; p++) {
+                const pageUsers = usersData.slice(p * pageSize, (p + 1) * pageSize);
+
+                // Create A4 Landscape Page
+                const pageEl = document.createElement('div');
+                pageEl.className = 'a4-page';
+
+                const gridEl = document.createElement('div');
+                gridEl.className = 'badges-grid';
+
+                pageUsers.forEach((user, idx) => {
+                    const badgeEl = createBadgeHtml(user, `p${p}_b${idx}`);
+                    gridEl.appendChild(badgeEl);
+                });
+
+                pageEl.appendChild(gridEl);
+                previewContainer.appendChild(pageEl);
+
+                // Generate QR codes after DOM insertion
+                pageUsers.forEach((user, idx) => {
+                    generateQrCodesForBadge(user, `p${p}_b${idx}`);
+                });
+            }
+        }
+
+        // Create Vertical Badge Component HTML (Identical layout to uploaded image)
+        function createBadgeHtml(user, uid) {
+            const card = document.createElement('div');
+            card.className = 'badge';
+            card.innerHTML = `
+                <div class="badge-header">
+                    <div class="dc3-box">DC3</div>
+                    <div class="outsort-box">outsort</div>
+                </div>
+
+                <div class="badge-user-info">
+                    <div class="badge-name">${escapeHtml(user.name || '')}</div>
+                    <div class="badge-id">${escapeHtml(user.id || '')}</div>
+                </div>
+
+                <div class="qr-section-top">
+                    <div id="qr-login-${uid}" class="qr-container"></div>
+                    <div class="qr-label">LOGIN</div>
+                </div>
+
+                <div class="qr-section-bottom">
+                    <div class="qr-sub-box">
+                        <div id="qr-name-${uid}" class="qr-container"></div>
+                        <div class="qr-label">NAME</div>
+                    </div>
+                    <div class="qr-sub-box">
+                        <div id="qr-pass-${uid}" class="qr-container"></div>
+                        <div class="qr-label">PASSWORD</div>
+                    </div>
+                </div>
+            `;
+            return card;
+        }
+
+        // Generate QRs
+        function generateQrCodesForBadge(user, uid) {
+            const loginBox = document.getElementById(`qr-login-${uid}`);
+            const nameBox = document.getElementById(`qr-name-${uid}`);
+            const passBox = document.getElementById(`qr-pass-${uid}`);
+
+            if (!loginBox || !nameBox || !passBox) return;
+
+            loginBox.innerHTML = '';
+            nameBox.innerHTML = '';
+            passBox.innerHTML = '';
+
+            // Login QR (Large)
+            new QRCode(loginBox, {
+                text: user.id || ' ',
+                width: 90,
+                height: 90,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.M
+            });
+
+            // Name QR (Small)
+            new QRCode(nameBox, {
+                text: user.name || ' ',
+                width: 50,
+                height: 50,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.L
+            });
+
+            // Password QR (Small)
+            new QRCode(passBox, {
+                text: user.pass || ' ',
+                width: 50,
+                height: 50,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.L
+            });
+        }
+
+        // Drag & Drop / CSV Import Setup
+        function setupFileImport() {
+            dropZone.addEventListener('click', () => csvFileInput.click());
+
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('border-brand-500', 'bg-slate-800');
+            });
+
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('border-brand-500', 'bg-slate-800');
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('border-brand-500', 'bg-slate-800');
+                if (e.dataTransfer.files.length) {
+                    handleFile(e.dataTransfer.files[0]);
+                }
+            });
+
+            csvFileInput.addEventListener('change', (e) => {
+                if (e.target.files.length) {
+                    handleFile(e.target.files[0]);
+                }
+            });
+        }
+
+        function handleFile(file) {
+            Papa.parse(file, {
+                skipEmptyLines: true,
+                complete: function(results) {
+                    if (results.data && results.data.length > 0) {
+                        const newUsers = [];
+                        results.data.forEach((row, i) => {
+                            if (i === 0 && (row[0].toLowerCase().includes('id') || row[1].toLowerCase().includes('прізвище') || row[1].toLowerCase().includes('name'))) {
+                                return; // Header row skip
+                            }
+                            if (row.length >= 3) {
+                                newUsers.push({
+                                    id: String(row[0]).trim(),
+                                    name: String(row[1]).trim(),
+                                    pass: String(row[2]).trim()
+                                });
+                            }
+                        });
+
+                        if (newUsers.length > 0) {
+                            usersData = newUsers;
+                            renderTable();
+                            renderBadges();
+                        } else {
+                            alert('Файл порожній або має некоректний формат. Потрібно мінімум 3 колонки (ID, Ім\'я, Пароль).');
+                        }
+                    }
+                }
+            });
+        }
+
+        // Sample CSV Download
+        function downloadSampleCSV() {
+            const csvContent = "data:text/csv;charset=utf-8," 
+                + "ID,Прізвище Ім'я,Пароль\n"
+                + "60121553,Anna Shepera,Pass1234\n"
+                + "60121554,Ivan Kovalenko,Qwerty99\n"
+                + "60121555,Maria Petrenko,Secu9876\n";
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "sample_outsort_badges.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function triggerPrint() {
+            if (usersData.length === 0) {
+                alert('Будь ласка, додайте хоча б одного працівника перед друком.');
+                return;
+            }
+            window.print();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.innerText = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
